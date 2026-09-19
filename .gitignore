@@ -1,0 +1,39 @@
+# Dependencies
+/52WAnalyzer/vendor/
+/52WAnalyzer/node_modules/
+/52WAnalyzer/public/build/
+/52WAnalyzer/public/hot/
+/52WAnalyzer/public/storage/
+
+# Environment & Credentials
+.env
+.env.*
+!.env.example
+*.key
+auth.json
+
+# Logs & Cache
+*.log
+/52WAnalyzer/storage/logs/
+/52WAnalyzer/storage/framework/cache/
+/52WAnalyzer/storage/framework/sessions/
+/52WAnalyzer/storage/framework/views/
+.phpunit.result.cache
+
+# IDE & OS Files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Large Binary Builds & Archives
+*.exe
+*.pkg
+*.pyz
+*.zip
+*.tar.gz
+*.sqlite-wal
+*.sqlite-shm
+Reference/release/build/
+Reference/dist/
+Reference/release/*.exe
