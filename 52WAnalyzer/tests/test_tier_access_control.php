@@ -25,7 +25,7 @@ $users = [
 
 $testMatrix = [
     // [Route Path, Expected Status for: [Guest, Starter, FreeTrial, Pro, Elite, Admin]]
-    ['/', [200, 200, 200, 200, 200, 200]],
+    ['/', [302, 200, 200, 200, 200, 200]],
     ['/risk-calculator', [200, 200, 200, 200, 200, 200]],
     ['/pricing', [200, 200, 200, 200, 200, 200]],
     ['/volume-gainers', [302, 200, 200, 200, 200, 200]],

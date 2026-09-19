@@ -132,10 +132,10 @@ class User extends Authenticatable
 
         return match ($feature) {
             // Basic Free features
-            'dashboard_basic', 'risk_calculator_basic' => true,
+            'risk_calculator_basic' => true,
 
             // Starter features (₹999/mo)
-            'volume_gainers', 'date_matrix_7d', 're_emergence_5d', 'trade_journal_basic' => $this->isStarter(),
+            'momentum_dashboard', 'volume_gainers', 'date_matrix_7d', 're_emergence_5d', 'trade_journal_basic' => $this->isStarter(),
 
             // Pro features (₹2,499/mo)
             'date_matrix_full', 're_emergence_10d', 're_emergence_15d', 'trading_engine_candidates',

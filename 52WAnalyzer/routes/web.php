@@ -16,9 +16,7 @@ use App\Http\Controllers\PricingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AdminController;
 
-// Momentum Dashboard (Public Free Access)
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/dashboard', [DashboardController::class, 'index']);
+// Public Risk Calculator
 Route::get('/risk-calculator', [RiskCalculatorController::class, 'index'])->name('risk-calculator.index');
 
 // User Authentication Routes
@@ -52,6 +50,10 @@ Route::post('/payment/webhook', [PaymentController::class, 'webhook'])->name('pa
 
 // Starter Tier Facilities (Starter, Pro, Elite, Admin)
 Route::middleware(['auth', 'check.tier:starter'])->group(function () {
+    // Momentum Dashboard (Requires Subscription)
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
     Route::get('/volume-gainers', [VolumeGainersController::class, 'index'])->name('volume-gainers.index');
 
     Route::prefix('date-matrix')->group(function () {
