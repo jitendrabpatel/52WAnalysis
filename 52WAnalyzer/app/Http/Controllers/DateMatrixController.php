@@ -20,13 +20,14 @@ class DateMatrixController extends Controller
         $tab = $request->get('tab', '52wh'); // '52wh', 'vg', 'combined'
         $days = (int) $request->get('days', 10);
         
+        $maxAllowedDays = ($user && $user->isPro()) ? 60 : 7;
+        
         // Starter tier has 7-Day Date Matrix Lookback limit
-        if ($user && !$user->isPro() && $days > 7) {
-            $days = 7;
+        if ($days > $maxAllowedDays) {
+            $days = $maxAllowedDays;
         }
 
         if ($days < 3) $days = 3;
-        if ($days > 30) $days = 30;
 
         $sort = $request->get('sort', 'streak_surge'); // 'streak_surge', 'p_change', 'symbol', 'turnover'
         $search = trim($request->get('search', ''));

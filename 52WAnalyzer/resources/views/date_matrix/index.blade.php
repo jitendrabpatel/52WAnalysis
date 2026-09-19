@@ -24,15 +24,23 @@
         <!-- Controls: Days selector, Sort & Export CSV -->
         <div class="flex flex-wrap items-center gap-2">
             <!-- Days Window Form -->
-            <form method="GET" action="{{ route('date-matrix.index') }}" class="flex items-center gap-2">
+            <form method="GET" action="{{ route('date-matrix.index') }}" class="flex flex-wrap items-center gap-2">
                 <input type="hidden" name="tab" value="{{ $tab }}">
                 
-                <div class="flex items-center space-x-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm">
+                <div class="flex items-center space-x-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm">
                     <label class="text-[11px] font-bold text-slate-500 dark:text-slate-400 px-2">Window:</label>
-                    @foreach([5, 10, 15, 20, 30] as $d)
+                    @php
+                        $userIsPro = auth()->check() && auth()->user()->isPro();
+                        $windowOptions = [3, 5, 7, 10, 15, 20, 30, 45];
+                    @endphp
+                    @foreach($windowOptions as $d)
+                        @php
+                            $isLocked = !$userIsPro && $d > 7;
+                        @endphp
                         <button type="submit" name="days" value="{{ $d }}" 
-                                class="px-2.5 py-1 text-xs font-semibold rounded-lg transition {{ $days == $d ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                            {{ $d }}D
+                                class="px-2 py-1 text-xs font-semibold rounded-lg transition {{ $days == $d ? 'bg-indigo-600 text-white shadow-sm' : ($isLocked ? 'text-slate-400 dark:text-slate-600 opacity-60 hover:opacity-100' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800') }}"
+                                title="{{ $isLocked ? "{$d}D requires Pro Tier (Starter is 7D max)" : "Show {$d} trading sessions" }}">
+                            {{ $d }}D{{ $isLocked ? '🔒' : '' }}
                         </button>
                     @endforeach
                 </div>
@@ -267,23 +275,105 @@
         </div>
     </div>
 
-    <!-- Horizontally Scrollable Calendar Column Matrix Table (Matching Reference Screenshot) -->
-    <div class="glass-panel rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
-        <div class="overflow-x-auto custom-scrollbar max-h-[750px] relative">
-            <table class="w-full text-left border-collapse table-fixed" style="min-width: {{ max(900, count($availableDates) * 175) }}px;">
+    <!-- View & Display Layout Controls Bar (Screen Fit vs Horizontal Scroll Mode) -->
+    <div class="glass-panel p-3 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs shadow-sm bg-slate-50/50 dark:bg-slate-900/50">
+        
+        <!-- Left: Display Mode & Columns per Screen Selector -->
+        <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Mode Toggle: Single Screen Fit vs Scroll Mode -->
+            <div class="inline-flex rounded-xl p-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm" role="group">
+                <button type="button" id="btn-mode-fit" onclick="setMatrixViewMode('fit')"
+                        class="px-3 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                        title="Fit all date columns onto a single screen with zero horizontal scroll">
+                    <span>🖥️</span>
+                    <span>Fit to Screen</span>
+                </button>
+                <button type="button" id="btn-mode-scroll" onclick="setMatrixViewMode('scroll')"
+                        class="px-3 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                        title="Use spacious fixed-width columns with smooth horizontal scrolling">
+                    <span>📜</span>
+                    <span>Horizontal Scroll</span>
+                </button>
+            </div>
+
+            <!-- Columns on Screen / Column Width Presets -->
+            <div class="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 shadow-sm">
+                <label for="matrix-col-preset" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Columns on Screen:</label>
+                <select id="matrix-col-preset" onchange="applyColumnPreset(this.value)" 
+                        class="bg-transparent border-0 text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-0 focus:outline-none cursor-pointer">
+                    <option value="fit">🖥️ Auto-Fit (All {{ count($availableDates) }} Dates)</option>
+                    <option value="3">3 Dates per screen</option>
+                    <option value="5">5 Dates per screen</option>
+                    <option value="7" selected>7 Dates per screen</option>
+                    <option value="10">10 Dates per screen</option>
+                    <option value="12">12 Dates per screen</option>
+                    <option value="compact">Compact Width (145px/col)</option>
+                    <option value="standard">Standard Width (190px/col)</option>
+                    <option value="spacious">Spacious Width (245px/col)</option>
+                </select>
+            </div>
+
+            <!-- Density Toggle (Compact vs Comfortable) -->
+            <button type="button" id="btn-density-toggle" onclick="toggleDensity()"
+                    class="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-400 font-semibold text-xs shadow-sm flex items-center gap-1.5"
+                    title="Toggle card height and padding density">
+                <span id="density-icon">📏</span>
+                <span id="density-text">Compact View</span>
+            </button>
+        </div>
+
+        <!-- Right: Horizontal Scroll Navigator Controls (Active in Scroll Mode) -->
+        <div id="matrix-scroll-nav" class="flex items-center gap-1.5">
+            <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 hidden sm:inline mr-1">Scroll Dates:</span>
+            
+            <button type="button" onclick="scrollMatrixTo('start')"
+                    class="p-1.5 px-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-300 font-bold transition shadow-sm hover:scale-105"
+                    title="Jump to Oldest Available Date (Leftmost)">
+                ⏪ Oldest
+            </button>
+            
+            <button type="button" onclick="scrollMatrixBy(-1)"
+                    class="p-1.5 px-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-300 font-bold transition shadow-sm hover:scale-105"
+                    title="Scroll Left (Previous Date Column)">
+                ◀ Prev
+            </button>
+
+            <!-- Active Visible Columns Tracker -->
+            <div id="scroll-status-badge" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 font-mono font-bold text-[11px]">
+                {{ count($availableDates) }} Dates
+            </div>
+
+            <button type="button" onclick="scrollMatrixBy(1)"
+                    class="p-1.5 px-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-300 font-bold transition shadow-sm hover:scale-105"
+                    title="Scroll Right (Next Date Column)">
+                Next ▶
+            </button>
+            
+            <button type="button" onclick="scrollMatrixTo('end')"
+                    class="p-1.5 px-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-300 font-bold transition shadow-sm hover:scale-105"
+                    title="Jump to Latest Trading Date (Rightmost / Today)">
+                Latest ⏩
+            </button>
+        </div>
+    </div>
+
+    <!-- Calendar Column Matrix Table Container with Interactive Screen-Fit & Horizontal Scroll -->
+    <div id="matrix-container-panel" class="glass-panel rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl transition-all">
+        <div id="matrix-scroll-wrapper" class="overflow-x-auto custom-scrollbar max-h-[760px] relative scroll-smooth">
+            <table id="matrix-table" class="w-full text-left border-collapse transition-all">
                 <!-- Table Headers: Trading Dates in Header with Blue Theme -->
                 <thead class="sticky top-0 z-20 shadow-md">
-                    <tr class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white text-xs font-bold divide-x divide-slate-700/80">
-                        @foreach($availableDates as $dateStr)
+                    <tr id="matrix-header-row" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white text-xs font-bold divide-x divide-slate-700/80">
+                        @foreach($availableDates as $dateIndex => $dateStr)
                             @php
                                 $dObj = \Carbon\Carbon::parse($dateStr);
                                 $colCount = count($matrixData[$dateStr] ?? []);
                             @endphp
-                            <th class="py-3 px-3.5 text-center tracking-wider bg-[#102a4e] text-white border-b-2 border-indigo-400">
-                                <div class="font-extrabold text-sm text-cyan-300">
+                            <th class="matrix-th py-2.5 px-2.5 text-center tracking-wider bg-[#102a4e] text-white border-b-2 border-indigo-400 transition-all" data-date-idx="{{ $dateIndex }}">
+                                <div class="font-extrabold text-xs sm:text-sm text-cyan-300 matrix-th-date">
                                     {{ $dObj->format('d-M-Y') }}
                                 </div>
-                                <div class="text-[10px] text-slate-300 font-normal flex items-center justify-center gap-1 mt-0.5">
+                                <div class="text-[10px] text-slate-300 font-normal flex items-center justify-center gap-1 mt-0.5 matrix-th-sub">
                                     <span>{{ $dObj->format('l') }}</span>
                                     <span>•</span>
                                     <span class="font-bold text-amber-300">{{ $colCount }} Stocks</span>
@@ -294,7 +384,7 @@
                 </thead>
 
                 <!-- Table Rows: Stock symbols under each column -->
-                <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60 bg-white dark:bg-slate-950/40 font-mono text-xs">
+                <tbody id="matrix-tbody" class="divide-y divide-slate-200 dark:divide-slate-800/60 bg-white dark:bg-slate-950/40 font-mono text-xs">
                     @if($maxRows === 0)
                         <tr>
                             <td colspan="{{ max(1, count($availableDates)) }}" class="py-12 text-center text-slate-400 text-sm">
@@ -308,7 +398,7 @@
                                     @php
                                         $item = $matrixData[$dateStr][$rowIndex] ?? null;
                                     @endphp
-                                    <td class="p-1.5 align-top text-center matrix-cell" data-col="{{ $dateStr }}">
+                                    <td class="p-1.5 align-top text-center matrix-cell transition-all" data-col="{{ $dateStr }}">
                                         @if($item)
                                             @php
                                                 $sym = $item['symbol'];
@@ -335,7 +425,7 @@
                                             @endphp
 
                                             <!-- Interactive Stock Card in Cell -->
-                                            <div class="stock-item group relative rounded-xl p-2 border transition-all duration-150 cursor-pointer {{ $bgClass }}"
+                                            <div class="stock-item group relative rounded-xl p-2 border transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md {{ $bgClass }}"
                                                  data-symbol="{{ $sym }}"
                                                  onmouseenter="highlightSymbol('{{ $sym }}')"
                                                  onmouseleave="unhighlightSymbol()"
@@ -343,7 +433,7 @@
                                                 
                                                 <!-- Top Row: Stock Symbol & Confluence Icon -->
                                                 <div class="flex items-center justify-between gap-1">
-                                                    <span class="font-black text-xs tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                                                    <span class="stock-item-symbol font-black text-xs tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                                                         {{ $sym }}
                                                     </span>
                                                     @if($item['is_dual'])
@@ -352,12 +442,12 @@
                                                 </div>
 
                                                 <!-- Middle Row: Badge Label (Streak / Spurt) -->
-                                                <div class="mt-1 text-[10px] font-sans font-bold truncate text-left opacity-90">
+                                                <div class="stock-item-badge mt-1 text-[10px] font-sans font-bold truncate text-left opacity-90">
                                                     {{ $badgeText }}
                                                 </div>
 
                                                 <!-- Bottom Row: LTP & % Change -->
-                                                <div class="mt-1 flex items-center justify-between text-[10px] font-sans pt-1 border-t border-black/5 dark:border-white/5">
+                                                <div class="stock-item-footer mt-1 flex items-center justify-between text-[10px] font-sans pt-1 border-t border-black/5 dark:border-white/5">
                                                     <span class="font-mono text-slate-500 dark:text-slate-400">₹{{ number_format($ltp, 1) }}</span>
                                                     <span class="font-bold {{ $pChg >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                                                         {{ $pChg >= 0 ? '+' : '' }}{{ number_format($pChg, 1) }}%
@@ -1050,6 +1140,267 @@
             closeCategoryModal();
         }
     });
+
+    /* ==========================================================================
+       DATE MATRIX: SCREEN-FIT & HORIZONTAL SCROLL CONTROLLER
+       ========================================================================== */
+    const totalDatesCount = {{ count($availableDates) }};
+    let currentMatrixViewMode = 'fit'; // 'fit' or 'scroll'
+    let currentColumnPreset = '7'; // 'fit', '3', '5', '7', '10', '12', 'compact', 'standard', 'spacious'
+    let isCompactDensity = false;
+
+    // Apply View Mode: 'fit' (Single Screen Width) or 'scroll' (Horizontal Scrollable)
+    function setMatrixViewMode(mode) {
+        currentMatrixViewMode = mode;
+        localStorage.setItem('date_matrix_view_mode', mode);
+
+        const btnFit = document.getElementById('btn-mode-fit');
+        const btnScroll = document.getElementById('btn-mode-scroll');
+        const presetSelect = document.getElementById('matrix-col-preset');
+        const table = document.getElementById('matrix-table');
+        const wrapper = document.getElementById('matrix-scroll-wrapper');
+        const scrollNav = document.getElementById('matrix-scroll-nav');
+
+        if (!table || !wrapper) return;
+
+        if (mode === 'fit') {
+            // Highlight Fit button
+            btnFit.className = 'px-3 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm';
+            btnScroll.className = 'px-3 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white';
+            
+            // Single screen fit: 100% width, fixed equal column distribution
+            table.style.minWidth = '100%';
+            table.style.width = '100%';
+            table.style.tableLayout = 'fixed';
+            wrapper.style.overflowX = 'hidden';
+
+            const thElements = table.querySelectorAll('.matrix-th');
+            thElements.forEach(th => {
+                th.style.width = `${100 / Math.max(1, totalDatesCount)}%`;
+                th.style.minWidth = '0px';
+            });
+
+            if (presetSelect) presetSelect.value = 'fit';
+            if (scrollNav) scrollNav.classList.add('opacity-40', 'pointer-events-none');
+            updateScrollStatusBadge('Fit on 1 Screen');
+        } else {
+            // Highlight Scroll button
+            btnScroll.className = 'px-3 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm';
+            btnFit.className = 'px-3 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white';
+            
+            wrapper.style.overflowX = 'auto';
+            table.style.tableLayout = 'auto';
+
+            if (scrollNav) scrollNav.classList.remove('opacity-40', 'pointer-events-none');
+            
+            // Apply column width according to preset
+            applyColumnPreset(currentColumnPreset === 'fit' ? '7' : currentColumnPreset, false);
+        }
+    }
+
+    // Apply specific Column Width preset or columns per view
+    function applyColumnPreset(preset, switchMode = true) {
+        currentColumnPreset = preset;
+        localStorage.setItem('date_matrix_col_preset', preset);
+
+        const table = document.getElementById('matrix-table');
+        const wrapper = document.getElementById('matrix-scroll-wrapper');
+        const presetSelect = document.getElementById('matrix-col-preset');
+        if (presetSelect && presetSelect.value !== preset) presetSelect.value = preset;
+
+        if (preset === 'fit') {
+            setMatrixViewMode('fit');
+            return;
+        }
+
+        if (switchMode && currentMatrixViewMode !== 'scroll') {
+            setMatrixViewMode('scroll');
+            return;
+        }
+
+        let colWidthPx = 185; // default standard
+        const containerWidth = wrapper ? wrapper.clientWidth || 1100 : 1100;
+
+        if (preset === '3') {
+            colWidthPx = Math.max(260, Math.floor((containerWidth - 40) / 3));
+        } else if (preset === '5') {
+            colWidthPx = Math.max(200, Math.floor((containerWidth - 40) / 5));
+        } else if (preset === '7') {
+            colWidthPx = Math.max(160, Math.floor((containerWidth - 40) / 7));
+        } else if (preset === '10') {
+            colWidthPx = Math.max(130, Math.floor((containerWidth - 40) / 10));
+        } else if (preset === '12') {
+            colWidthPx = Math.max(115, Math.floor((containerWidth - 40) / 12));
+        } else if (preset === 'compact') {
+            colWidthPx = 145;
+        } else if (preset === 'standard') {
+            colWidthPx = 190;
+        } else if (preset === 'spacious') {
+            colWidthPx = 250;
+        }
+
+        const totalTableMinWidth = Math.max(containerWidth, totalDatesCount * colWidthPx);
+        if (table) {
+            table.style.minWidth = `${totalTableMinWidth}px`;
+            table.style.width = `${totalTableMinWidth}px`;
+            table.style.tableLayout = 'fixed';
+
+            const thElements = table.querySelectorAll('.matrix-th');
+            thElements.forEach(th => {
+                th.style.width = `${colWidthPx}px`;
+                th.style.minWidth = `${colWidthPx}px`;
+            });
+        }
+
+        updateScrollTracker();
+    }
+
+    // Toggle Card Density (Compact vs Comfortable)
+    function toggleDensity() {
+        isCompactDensity = !isCompactDensity;
+        localStorage.setItem('date_matrix_density', isCompactDensity ? 'compact' : 'standard');
+        applyDensityStyles(isCompactDensity);
+    }
+
+    function applyDensityStyles(isCompact) {
+        const container = document.getElementById('matrix-container-panel');
+        const icon = document.getElementById('density-icon');
+        const text = document.getElementById('density-text');
+
+        if (isCompact) {
+            container?.classList.add('matrix-compact');
+            if (icon) icon.innerText = '📐';
+            if (text) text.innerText = 'Spacious View';
+        } else {
+            container?.classList.remove('matrix-compact');
+            if (icon) icon.innerText = '📏';
+            if (text) text.innerText = 'Compact View';
+        }
+    }
+
+    // Horizontal Scroll Navigator: Scroll by N columns
+    function scrollMatrixBy(direction) {
+        const wrapper = document.getElementById('matrix-scroll-wrapper');
+        if (!wrapper) return;
+        const scrollAmount = wrapper.clientWidth * 0.45 * direction;
+        wrapper.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+
+    // Jump to extreme start (oldest date) or extreme end (latest date)
+    function scrollMatrixTo(pos) {
+        const wrapper = document.getElementById('matrix-scroll-wrapper');
+        if (!wrapper) return;
+        if (pos === 'start') {
+            wrapper.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            wrapper.scrollTo({ left: wrapper.scrollWidth, behavior: 'smooth' });
+        }
+    }
+
+    // Calculate currently visible column range on screen
+    function updateScrollTracker() {
+        const wrapper = document.getElementById('matrix-scroll-wrapper');
+        if (!wrapper || currentMatrixViewMode === 'fit') {
+            updateScrollStatusBadge('Fit on 1 Screen');
+            return;
+        }
+
+        const scrollLeft = wrapper.scrollLeft;
+        const viewWidth = wrapper.clientWidth;
+        const totalWidth = wrapper.scrollWidth;
+
+        if (totalWidth <= viewWidth + 10) {
+            updateScrollStatusBadge(`All ${totalDatesCount} Dates Visible`);
+            return;
+        }
+
+        const thElements = Array.from(document.querySelectorAll('.matrix-th'));
+        if (thElements.length === 0) return;
+
+        const colWidth = thElements[0].offsetWidth || 185;
+        const firstVisibleIdx = Math.max(1, Math.floor(scrollLeft / colWidth) + 1);
+        const visibleColsCount = Math.ceil(viewWidth / colWidth);
+        const lastVisibleIdx = Math.min(totalDatesCount, firstVisibleIdx + visibleColsCount - 1);
+
+        updateScrollStatusBadge(`Cols ${firstVisibleIdx}–${lastVisibleIdx} of ${totalDatesCount}`);
+    }
+
+    function updateScrollStatusBadge(text) {
+        const badge = document.getElementById('scroll-status-badge');
+        if (badge) badge.innerText = text;
+    }
+
+    // Initialize layout preferences on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedMode = localStorage.getItem('date_matrix_view_mode') || (totalDatesCount <= 7 ? 'fit' : 'scroll');
+        const savedPreset = localStorage.getItem('date_matrix_col_preset') || (totalDatesCount <= 7 ? 'fit' : '7');
+        const savedDensity = localStorage.getItem('date_matrix_density') === 'compact';
+
+        isCompactDensity = savedDensity;
+        applyDensityStyles(savedDensity);
+
+        if (savedMode === 'fit') {
+            setMatrixViewMode('fit');
+        } else {
+            setMatrixViewMode('scroll');
+            applyColumnPreset(savedPreset, false);
+        }
+
+        const wrapper = document.getElementById('matrix-scroll-wrapper');
+        if (wrapper) {
+            wrapper.addEventListener('scroll', updateScrollTracker, { passive: true });
+            
+            // Allow horizontal scrolling via Shift + MouseWheel
+            wrapper.addEventListener('wheel', function(e) {
+                if (currentMatrixViewMode === 'scroll' && Math.abs(e.deltaX) < Math.abs(e.deltaY) && e.shiftKey) {
+                    wrapper.scrollLeft += e.deltaY;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+
+        // Window resize listener to recompute screen fit
+        window.addEventListener('resize', function() {
+            if (currentMatrixViewMode === 'fit') {
+                setMatrixViewMode('fit');
+            } else {
+                applyColumnPreset(currentColumnPreset, false);
+            }
+        });
+    });
 </script>
 @endpush
+
+<style>
+    /* Compact Card Density Mode CSS */
+    .matrix-compact .matrix-th {
+        padding: 6px 4px !important;
+    }
+    .matrix-compact .matrix-th-date {
+        font-size: 11px !important;
+    }
+    .matrix-compact .matrix-th-sub {
+        font-size: 9px !important;
+        margin-top: 1px !important;
+    }
+    .matrix-compact .matrix-cell {
+        padding: 3px !important;
+    }
+    .matrix-compact .stock-item {
+        padding: 4px 6px !important;
+        border-radius: 8px !important;
+    }
+    .matrix-compact .stock-item-symbol {
+        font-size: 11px !important;
+    }
+    .matrix-compact .stock-item-badge {
+        font-size: 9px !important;
+        margin-top: 1px !important;
+    }
+    .matrix-compact .stock-item-footer {
+        font-size: 9px !important;
+        margin-top: 1px !important;
+        padding-top: 1px !important;
+    }
+</style>
 @endsection
