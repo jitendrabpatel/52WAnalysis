@@ -16,7 +16,15 @@ class ReEmergenceController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth()->user();
         $tab = $request->get('tab', '5'); // '5', '10', '15'
+
+        // Starter tier only includes 5-Session Re-Emergence. 10 & 15 require Pro or above.
+        if ($user && !$user->isPro() && in_array($tab, ['10', '15'])) {
+            return redirect()->route('pricing.index', ['required_tier' => 'PRO'])
+                ->with('error', '⚡ Pro Feature Locked: 10+ and 15+ Session Re-Emergence filters require the PRO tier or higher.');
+        }
+
         $minGap = (int) $tab;
         if (!in_array($minGap, [5, 10, 15])) {
             $minGap = 5;
@@ -116,6 +124,12 @@ class ReEmergenceController extends Controller
      */
     public function exportCsv(Request $request)
     {
+        $user = auth()->user();
+        if ($user && !$user->isPro()) {
+            return redirect()->route('pricing.index', ['required_tier' => 'PRO'])
+                ->with('error', '⚡ Pro Feature Locked: Re-Emergence CSV export requires the PRO tier or higher.');
+        }
+
         $tab = $request->get('tab', '5');
         $minGap = (int) $tab;
         $sourceFilter = $request->get('source', 'ALL');

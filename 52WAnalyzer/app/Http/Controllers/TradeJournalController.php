@@ -58,6 +58,15 @@ class TradeJournalController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if ($user && !$user->isPro()) {
+            $existingCount = TradeJournal::count();
+            if ($existingCount >= 50) {
+                return redirect()->route('pricing.index', ['required_tier' => 'PRO'])
+                    ->with('error', '⚡ Starter Journal Limit Reached: Starter tier includes up to 50 trade logs. Upgrade to PRO for unlimited journal logging and CSV analytics.');
+            }
+        }
+
         $validated = validator($request->all(), [
             'symbol' => 'required|string|max:20',
             'entry_date' => 'required|date',

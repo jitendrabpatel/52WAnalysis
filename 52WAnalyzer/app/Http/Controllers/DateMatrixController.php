@@ -16,8 +16,15 @@ class DateMatrixController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth()->user();
         $tab = $request->get('tab', '52wh'); // '52wh', 'vg', 'combined'
         $days = (int) $request->get('days', 10);
+        
+        // Starter tier has 7-Day Date Matrix Lookback limit
+        if ($user && !$user->isPro() && $days > 7) {
+            $days = 7;
+        }
+
         if ($days < 3) $days = 3;
         if ($days > 30) $days = 30;
 
