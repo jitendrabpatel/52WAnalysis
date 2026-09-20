@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Momentum Dashboard - 52WAnalyzer')
+@section('title', 'Momentum Dashboard - InvestingIQ')
 
 @section('content')
 <div class="space-y-6">

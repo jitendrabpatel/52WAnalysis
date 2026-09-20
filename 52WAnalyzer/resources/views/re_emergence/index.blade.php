@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Re-Emergence Breakouts (>5, >10, >15 Sessions) — 52WAnalyzer')
+@section('title', 'Re-Emergence Breakouts (>5, >10, >15 Sessions) — InvestingIQ')
 
 @section('content')
 <div class="space-y-6">

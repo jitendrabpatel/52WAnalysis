@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Trade Journal - 52WAnalyzer')
+@section('title', 'Trade Journal - InvestingIQ')
 
 @section('content')
 <div class="space-y-6">

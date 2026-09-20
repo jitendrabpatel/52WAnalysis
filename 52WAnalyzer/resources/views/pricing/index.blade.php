@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Subscription Plans & Pricing - 52WAnalyzer')
+@section('title', 'Subscription Plans & Pricing - InvestingIQ')
 
 @section('content')
 <div class="space-y-12 max-w-6xl mx-auto py-4">

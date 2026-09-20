@@ -146,7 +146,7 @@ class DateMatrixController extends Controller
             }
         }
 
-        $filename = "52WAnalyzer_{$tab}_matrix_" . now()->format('Y-m-d') . ".csv";
+        $filename = "InvestingIQ_{$tab}_matrix_" . now()->format('Y-m-d') . ".csv";
 
         return new StreamedResponse(function () use ($availableDates, $matrixData, $maxRows) {
             $handle = fopen('php://output', 'w');

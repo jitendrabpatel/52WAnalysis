@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'NSE 52W High & Volume Gainers Analyzer')</title>
+    <title>@yield('title', 'InvestingIQ - Intelligent Stock Momentum & Analytics')</title>
     
     <!-- Theme Initializer (Default: Light Mode) -->
     <script>
@@ -166,17 +166,32 @@
                 <!-- Brand & Logo -->
                 <div class="flex items-center space-x-3">
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform duration-200">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
+                        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-400 p-[1.5px] shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 group-hover:scale-105 transition-all duration-200">
+                            <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center overflow-hidden relative">
+                                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-cyan-500/10"></div>
+                                <svg class="w-6 h-6 relative z-10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="14" width="2.5" height="6" rx="1.25" fill="#6366f1" fill-opacity="0.6"/>
+                                    <rect x="8.5" y="10" width="2.5" height="10" rx="1.25" fill="#818cf8" fill-opacity="0.8"/>
+                                    <rect x="14" y="6" width="2.5" height="14" rx="1.25" fill="#06b6d4" fill-opacity="0.9"/>
+                                    <path d="M4 14.5L9.7 10.5L15.2 6.5L20 2" stroke="url(#nav-iq-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <circle cx="20" cy="2.5" r="2" fill="#22d3ee"/>
+                                    <circle cx="20" cy="2.5" r="3.8" stroke="#22d3ee" stroke-opacity="0.5" stroke-width="1"/>
+                                    <defs>
+                                        <linearGradient id="nav-iq-grad" x1="4" y1="14.5" x2="20" y2="2" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#818cf8"/>
+                                            <stop offset="0.5" stop-color="#a855f7"/>
+                                            <stop offset="1" stop-color="#22d3ee"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
                         </div>
                         <div>
-                            <span class="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                                52W<span class="text-indigo-600 dark:text-indigo-400">Analyzer</span>
-                                <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">NSE Real-Time</span>
+                            <span class="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 font-heading">
+                                Investing<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 dark:from-indigo-400 dark:via-purple-400 dark:to-cyan-400">IQ</span>
+                                <span class="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">NSE Real-Time</span>
                             </span>
-                            <span class="text-[11px] text-slate-500 dark:text-slate-400 block -mt-1">Algorithmic Momentum & Volume Engine</span>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400 block -mt-1 font-medium">Algorithmic Momentum & Intelligence Engine</span>
                         </div>
                     </a>
                 </div>
@@ -354,11 +369,11 @@
     <!-- Footer -->
     <footer class="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 py-6 text-center text-xs text-slate-600 dark:text-slate-500 transition-colors">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div>
-                <span class="font-bold text-slate-800 dark:text-slate-400">52WAnalyzer</span> — Algorithmic 52-Week High & Volume Spurt Analysis
+            <div class="flex items-center gap-2">
+                <span class="font-extrabold text-slate-900 dark:text-slate-200">Investing<span class="text-indigo-600 dark:text-cyan-400">IQ</span></span> — Algorithmic Market Momentum & Quantitative Analytics
             </div>
             <div class="flex items-center space-x-4 text-slate-600 dark:text-slate-400">
-                <span>Database: <strong class="text-emerald-600 dark:text-emerald-400 font-mono">MySQL (Local)</strong></span>
+                <span>Database: <strong class="text-emerald-600 dark:text-emerald-400 font-mono">SQLite / MySQL</strong></span>
                 <span>•</span>
                 <span>Source: <strong class="text-indigo-600 dark:text-indigo-400 font-mono">NSE India Real-Time</strong></span>
             </div>

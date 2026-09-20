@@ -95,7 +95,7 @@ class AuthController extends Controller
         Auth::login($user);
 
         return redirect()->route('dashboard')
-            ->with('success', "🎉 Welcome to 52WAnalyzer! Your 7-Day Pro Free Trial has been activated with full platform access.");
+            ->with('success', "🎉 Welcome to InvestingIQ! Your 7-Day Pro Free Trial has been activated with full platform access.");
     }
 
     /**

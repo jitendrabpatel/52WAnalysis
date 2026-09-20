@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Start 7-Day Free Trial - 52WAnalyzer')
+@section('title', 'Start 7-Day Free Trial - InvestingIQ')
 
 @section('content')
 <div class="max-w-md mx-auto py-8">

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Data Archives Manager - 52WAnalyzer')
+@section('title', 'Data Archives Manager - InvestingIQ')
 
 @section('content')
 <div class="space-y-6">

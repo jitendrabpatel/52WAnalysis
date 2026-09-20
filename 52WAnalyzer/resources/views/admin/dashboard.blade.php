@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Subscription Analytics & User Management — 52WAnalyzer')
+@section('title', 'Admin Subscription Analytics & User Management — InvestingIQ')
 
 @section('content')
 <div class="space-y-6">

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Live Interactive Risk Calculator - 52WAnalyzer')
+@section('title', 'Live Interactive Risk Calculator - InvestingIQ')
 
 @section('content')
 <div class="space-y-6">

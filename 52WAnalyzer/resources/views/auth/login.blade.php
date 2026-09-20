@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Sign In - 52WAnalyzer')
+@section('title', 'Sign In - InvestingIQ')
 
 @section('content')
 <div class="max-w-md mx-auto py-10">
@@ -8,16 +8,31 @@
         
         <!-- Header & Logo -->
         <div class="text-center space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-emerald-400 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/25">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+            <div class="relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-400 p-[2px] mx-auto shadow-xl shadow-indigo-500/25">
+                <div class="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/25 to-cyan-500/15"></div>
+                    <svg class="w-8 h-8 relative z-10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="14" width="2.5" height="6" rx="1.25" fill="#6366f1" fill-opacity="0.6"/>
+                        <rect x="8.5" y="10" width="2.5" height="10" rx="1.25" fill="#818cf8" fill-opacity="0.8"/>
+                        <rect x="14" y="6" width="2.5" height="14" rx="1.25" fill="#06b6d4" fill-opacity="0.9"/>
+                        <path d="M4 14.5L9.7 10.5L15.2 6.5L20 2" stroke="url(#login-iq-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="20" cy="2.5" r="2.2" fill="#22d3ee"/>
+                        <circle cx="20" cy="2.5" r="4.2" stroke="#22d3ee" stroke-opacity="0.5" stroke-width="1.2"/>
+                        <defs>
+                            <linearGradient id="login-iq-grad" x1="4" y1="14.5" x2="20" y2="2" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#818cf8"/>
+                                <stop offset="0.5" stop-color="#a855f7"/>
+                                <stop offset="1" stop-color="#22d3ee"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
             </div>
-            <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Welcome to 52W<span class="text-indigo-600 dark:text-indigo-400">Analyzer</span>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight font-heading mt-2">
+                Welcome to Investing<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 dark:from-indigo-400 dark:via-purple-400 dark:to-cyan-400">IQ</span>
             </h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-                Sign in to your algorithmic trading terminal
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Sign in to your intelligent algorithmic trading terminal
             </p>
         </div>
 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Secure Checkout - 52WAnalyzer')
+@section('title', 'Secure Checkout - InvestingIQ')
 
 @section('content')
 <div class="max-w-3xl mx-auto py-6 space-y-6">

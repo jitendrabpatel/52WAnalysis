@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Technical Pattern Scanner - 52WAnalyzer')
+@section('title', 'Technical Pattern Scanner - InvestingIQ')
 
 @section('content')
 <div class="space-y-6">

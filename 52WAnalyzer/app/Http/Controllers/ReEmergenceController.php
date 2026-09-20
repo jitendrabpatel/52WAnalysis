@@ -161,7 +161,7 @@ class ReEmergenceController extends Controller
 
         usort($list, fn($a, $b) => $b['gap_sessions'] <=> $a['gap_sessions']);
 
-        $filename = "52WAnalyzer_ReEmergence_GT{$minGap}Sessions_" . now()->format('Y-m-d') . ".csv";
+        $filename = "InvestingIQ_ReEmergence_GT{$minGap}Sessions_" . now()->format('Y-m-d') . ".csv";
 
         return new StreamedResponse(function () use ($list, $minGap) {
             $handle = fopen('php://output', 'w');
